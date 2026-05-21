@@ -119,7 +119,7 @@ export class FleetController {
         req.rawBody ?? Buffer.alloc(0),
         signature,
         webhookSecret,
-      ) as typeof event;
+      ) as unknown as typeof event;
     } catch (err) {
       this.logger.warn(`Stripe webhook signature verification failed: ${err.message}`);
       throw new BadRequestException('Invalid Stripe webhook signature');

@@ -16,7 +16,7 @@ export enum FleetInviteStatus {
 }
 
 @Entity('fleet_invites')
-@Index(['invite_token'], { unique: true })
+@Index(['inviteToken'], { unique: true })
 export class FleetInvite {
   @PrimaryGeneratedColumn('uuid')
   id: string;

@@ -24,7 +24,7 @@ export class FleetPayoutService {
     private readonly emailService: EmailService,
     private readonly notificationService: NotificationService,
   ) {
-    this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2024-06-20' });
+    this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2024-06-20' as any });
   }
 
   async processRidePayout(rideId: string, fleetId: string): Promise<void> {
@@ -76,10 +76,10 @@ export class FleetPayoutService {
 
     // Send receipt to rider
     if (ride.rider?.email) {
-      await this.emailService.sendEmail({
-        to: ride.rider.email,
-        subject: 'Your Neighborly Fleet Ride Receipt',
-        html: `
+      await this.emailService.sendEmail(
+        ride.rider.email,
+        'Your Neighborly Fleet Ride Receipt',
+        `
           <h2>Ride Receipt</h2>
           <p><strong>Fleet:</strong> ${fleet.company_name}</p>
           <p><strong>Pickup:</strong> ${ride.pickup_address}</p>
@@ -87,7 +87,7 @@ export class FleetPayoutService {
           <p><strong>Fare:</strong> $${Number(ride.fare).toFixed(2)}</p>
           <p><strong>Date:</strong> ${ride.completed_at?.toLocaleDateString()}</p>
         `,
-      });
+      );
     }
 
     // Notify fleet manager of payout

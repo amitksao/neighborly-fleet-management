@@ -5,11 +5,12 @@ FROM ghcr.io/cirruslabs/flutter:stable AS build
 WORKDIR /app
 
 # Copy pubspec files first for dependency caching
-COPY pubspec.yaml pubspec.lock ./
+# (build context is repo root per railway.toml, so prefix with frontend/)
+COPY frontend/pubspec.yaml frontend/pubspec.lock ./
 RUN flutter pub get
 
 # Copy the rest of the source
-COPY . .
+COPY frontend/ .
 
 # BASE_URL is injected by Railway as a build argument.
 # Set it in Railway → frontend service → Variables as BASE_URL=https://your-backend.railway.app
@@ -17,7 +18,6 @@ ARG BASE_URL=http://localhost:3000
 
 # Build Flutter web with CanvasKit renderer for consistent rendering
 RUN flutter build web --release \
-    --web-renderer canvaskit \
     --dart-define=BASE_URL=$BASE_URL
 
 # Stage 2: Serve with nginx
@@ -30,7 +30,7 @@ RUN rm -rf /usr/share/nginx/html/*
 COPY --from=build /app/build/web /usr/share/nginx/html
 
 # Copy nginx config
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY frontend/nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
 

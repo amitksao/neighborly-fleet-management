@@ -180,11 +180,11 @@ export class FleetRegistrationService {
         });
       }
       if (manager?.email) {
-        await this.emailService.sendEmail({
-          to: manager.email,
-          subject: `Your fleet "${fleet.company_name}" has been approved`,
-          html: `<p>Congratulations! Your fleet has been approved. Log in to start inviting drivers.</p>`,
-        });
+        await this.emailService.sendEmail(
+          manager.email,
+          `Your fleet "${fleet.company_name}" has been approved`,
+          `<p>Congratulations! Your fleet has been approved. Log in to start inviting drivers.</p>`,
+        );
       }
 
       this.logger.log(`Fleet approved: ${fleetId}`);
@@ -210,11 +210,11 @@ export class FleetRegistrationService {
 
     const manager = await this.userRepository.findOne({ where: { id: fleet.managerUserId } });
     if (manager?.email) {
-      await this.emailService.sendEmail({
-        to: manager.email,
-        subject: `Fleet application update for "${fleet.company_name}"`,
-        html: `<p>Your fleet application was not approved. Reason: ${reason}</p>`,
-      });
+      await this.emailService.sendEmail(
+        manager.email,
+        `Fleet application update for "${fleet.company_name}"`,
+        `<p>Your fleet application was not approved. Reason: ${reason}</p>`,
+      );
     }
 
     return saved;

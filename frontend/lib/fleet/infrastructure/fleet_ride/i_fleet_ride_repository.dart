@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../../domain/fleet_ride/fleet_ride_repository.dart';
+import '../../domain/fleet_ride/models/fleet_ride.dart';
 
 class IFleetRideRepository implements FleetRideRepository {
   final String baseUrl;

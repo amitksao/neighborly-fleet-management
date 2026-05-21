@@ -9,7 +9,7 @@ import {
   Index,
 } from 'typeorm';
 import { Fleet } from './fleet.entity';
-import { User } from '../../../src/users/entities/user.entity';
+import { User } from '../../users/entities/user.entity';
 
 export enum FleetDriverStatus {
   INVITED = 'invited',
@@ -20,7 +20,7 @@ export enum FleetDriverStatus {
 }
 
 @Entity('fleet_drivers')
-@Index(['fleet_id', 'driver_user_id'], { unique: true, where: 'driver_user_id IS NOT NULL' })
+@Index(['fleetId', 'driverUserId'], { unique: true, where: 'driver_user_id IS NOT NULL' })
 export class FleetDriver {
   @PrimaryGeneratedColumn('uuid')
   id: string;

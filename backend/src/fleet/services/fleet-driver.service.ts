@@ -80,17 +80,17 @@ export class FleetDriverService {
 
     // Send invite email
     const inviteUrl = `${process.env.APP_BASE_URL}/fleet/invite/${token}`;
-    await this.emailService.sendEmail({
-      to: dto.email,
-      subject: `You've been invited to join ${fleet.company_name} on Neighborly`,
-      html: `
+    await this.emailService.sendEmail(
+      dto.email,
+      `You've been invited to join ${fleet.company_name} on Neighborly`,
+      `
         <p>Hi,</p>
         <p>${fleet.company_name} has invited you to join their fleet on Neighborly as a driver.</p>
         ${dto.message ? `<p><em>"${dto.message}"</em></p>` : ''}
         <p><a href="${inviteUrl}">Accept Invitation</a></p>
         <p>This link expires in ${INVITE_TTL_DAYS} days.</p>
       `,
-    });
+    );
 
     this.logger.log(`Driver invite sent to ${dto.email} for fleet ${fleetId}`);
     return savedInvite;

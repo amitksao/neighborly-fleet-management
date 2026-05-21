@@ -4,7 +4,12 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  ManyToOne,
+  ManyToMany,
+  JoinTable,
+  JoinColumn,
 } from 'typeorm';
+import { User } from '../../users/entities/user.entity';
 
 export enum CommunityType {
   PERSONAL = 'personal',
@@ -36,6 +41,18 @@ export class Community {
 
   @Column({ length: 500, nullable: true })
   description: string;
+
+  @ManyToOne(() => User, { nullable: true, eager: false })
+  @JoinColumn({ name: 'driver_user_id' })
+  driver: User;
+
+  @ManyToMany(() => User, { eager: false })
+  @JoinTable({
+    name: 'community_riders',
+    joinColumn: { name: 'community_id', referencedColumnName: 'community_id' },
+    inverseJoinColumn: { name: 'user_id', referencedColumnName: 'id' },
+  })
+  riders: User[];
 
   @CreateDateColumn()
   created_at: Date;

@@ -12,8 +12,8 @@ import {
 } from 'typeorm';
 // These imports reference the existing neighborly_backend source tree
 // In integration, use relative paths adjusted to the monorepo layout
-import { User } from '../../../src/users/entities/user.entity';
-import { Community } from '../../../src/communities/entities/community.entity';
+import { User } from '../../users/entities/user.entity';
+import { Community } from '../../communities/entities/community.entity';
 import { FleetDriver } from './fleet-driver.entity';
 
 export enum FleetStatus {
