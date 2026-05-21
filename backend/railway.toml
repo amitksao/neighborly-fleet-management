@@ -1,0 +1,13 @@
+# Railway configuration for the Fleet Management Backend (NestJS)
+# When adding this service in Railway, set the Root Directory to "backend/"
+
+[build]
+builder = "dockerfile"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+startCommand = "node dist/src/main"
+healthcheckPath = "/api/health"
+healthcheckTimeout = 60
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3

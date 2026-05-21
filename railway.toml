@@ -1,0 +1,15 @@
+# Railway configuration for the Fleet Management Frontend (Flutter Web)
+# This file configures the Flutter web service deployed from this repo.
+#
+# The backend is deployed separately from the neighborly-backend repo.
+# See RAILWAY_DEPLOYMENT.md for the full setup guide.
+
+[build]
+builder = "dockerfile"
+dockerfilePath = "frontend/Dockerfile"
+
+[deploy]
+healthcheckPath = "/"
+healthcheckTimeout = 30
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3

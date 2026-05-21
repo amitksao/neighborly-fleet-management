@@ -1,0 +1,49 @@
+# Dependencies
+node_modules/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+
+# Build outputs
+dist/
+build/
+*.js.map
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Flutter
+**/android/local.properties
+**/android/.gradle/
+**/android/captures/
+**/android/gradlew
+**/android/gradlew.bat
+**/android/gradle/
+**/ios/Pods/
+**/ios/.symlinks/
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/Flutter.podspec
+**/*.xcworkspace
+**/android/key.properties
+**/android/app/google-services.json
+**/ios/Runner/GoogleService-Info.plist
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Firebase service account keys (never commit these)
+*service-account*.json
+firebase-adminsdk*.json
+serviceAccountKey.json
