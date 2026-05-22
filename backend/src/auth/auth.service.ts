@@ -13,6 +13,7 @@ import { User, UserRole } from '../users/entities/user.entity';
 import { Fleet } from '../fleet/entities/fleet.entity';
 import { RegisterDto } from './dto/register.dto';
 import { EmailService } from '../common/services/email.service';
+import { RedisService } from '../common/services/redis.service';
 
 @Injectable()
 export class AuthService {
@@ -26,6 +27,7 @@ export class AuthService {
     private readonly fleetRepository: Repository<Fleet>,
     private readonly jwtService: JwtService,
     private readonly emailService: EmailService,
+    private readonly redisService: RedisService,
   ) {}
 
   async register(dto: RegisterDto) {
@@ -83,9 +85,9 @@ export class AuthService {
   }
 
   async resetPassword(token: string, newPassword: string): Promise<void> {
-    let payload: { id: string; type: string };
+    let payload: { id: string; type: string; exp: number };
     try {
-      payload = this.jwtService.verify(token) as { id: string; type: string };
+      payload = this.jwtService.verify(token) as { id: string; type: string; exp: number };
     } catch {
       throw new BadRequestException('Reset link is invalid or has expired');
     }
@@ -94,11 +96,23 @@ export class AuthService {
       throw new BadRequestException('Invalid reset token');
     }
 
+    const blacklistKey = `used_reset_token:${token}`;
+    if (await this.redisService.keyExists(blacklistKey)) {
+      throw new BadRequestException('Reset link has already been used');
+    }
+
     const user = await this.userRepository.findOne({ where: { id: payload.id } });
     if (!user) throw new BadRequestException('User not found');
 
     user.password = await bcrypt.hash(newPassword, 10);
     await this.userRepository.save(user);
+
+    // Blacklist the token for its remaining lifetime so it cannot be reused
+    const remainingTtl = payload.exp - Math.floor(Date.now() / 1000);
+    if (remainingTtl > 0) {
+      await this.redisService.set(blacklistKey, '1', remainingTtl);
+    }
+
     this.logger.log(`Password reset for user ${user.id}`);
   }
 
