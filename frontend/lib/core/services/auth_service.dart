@@ -20,6 +20,32 @@ class AuthService {
     return AuthUser.fromJsonString(raw);
   }
 
+  /// Registers a new account. Stores token + user locally on success.
+  Future<({String token, AuthUser user})> register(
+      String name, String email, String password) async {
+    final response = await http.post(
+      Uri.parse('${AppConfig.baseUrl}/auth/register'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'name': name, 'email': email, 'password': password}),
+    );
+
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      final body = jsonDecode(response.body) as Map<String, dynamic>;
+      throw Exception(body['message'] ?? 'Registration failed (${response.statusCode})');
+    }
+
+    final body = jsonDecode(response.body) as Map<String, dynamic>;
+    final data = body['data'] as Map<String, dynamic>;
+    final token = data['access_token'] as String;
+    final user = AuthUser.fromJson(data['user'] as Map<String, dynamic>);
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_tokenKey, token);
+    await prefs.setString(_userKey, user.toJsonString());
+
+    return (token: token, user: user);
+  }
+
   /// Logs in with email + password. Stores token + user locally on success.
   Future<({String token, AuthUser user})> login(
       String email, String password) async {

@@ -1,34 +1,41 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../core/cubits/auth_cubit.dart';
-import '../../core/injection.dart';
 import '../../fleet/domain/fleet_manager/fleet_manager_repository.dart';
+import '../../core/injection.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class SignupScreen extends StatefulWidget {
+  const SignupScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<SignupScreen> createState() => _SignupScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _SignupScreenState extends State<SignupScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _nameCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
+  final _confirmCtrl = TextEditingController();
   bool _obscurePassword = true;
+  bool _obscureConfirm = true;
 
   @override
   void dispose() {
+    _nameCtrl.dispose();
     _emailCtrl.dispose();
     _passwordCtrl.dispose();
+    _confirmCtrl.dispose();
     super.dispose();
   }
 
   void _submit() {
     if (!_formKey.currentState!.validate()) return;
-    context
-        .read<AuthCubit>()
-        .login(_emailCtrl.text.trim(), _passwordCtrl.text);
+    context.read<AuthCubit>().register(
+          _nameCtrl.text.trim(),
+          _emailCtrl.text.trim(),
+          _passwordCtrl.text,
+        );
   }
 
   Future<void> _handleAuthenticated(AuthAuthenticated state) async {
@@ -60,6 +67,12 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('Create Account'),
+        leading: BackButton(
+          onPressed: () => Navigator.of(context).pushReplacementNamed('/login'),
+        ),
+      ),
       body: BlocConsumer<AuthCubit, AuthState>(
         listener: (context, state) {
           if (state is AuthAuthenticated) {
@@ -83,12 +96,12 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 48),
+                    const SizedBox(height: 24),
                     const Icon(Icons.local_shipping_rounded,
                         size: 56, color: Colors.blue),
                     const SizedBox(height: 24),
                     Text(
-                      'Fleet Manager Login',
+                      'Join Neighborly Fleet',
                       style: Theme.of(context)
                           .textTheme
                           .headlineSmall
@@ -96,10 +109,24 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Sign in with your Neighborly account.',
+                      'Create your fleet manager account.',
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                     const SizedBox(height: 40),
+                    TextFormField(
+                      controller: _nameCtrl,
+                      textInputAction: TextInputAction.next,
+                      decoration: InputDecoration(
+                        labelText: 'Full Name',
+                        prefixIcon: const Icon(Icons.person_outline),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                        filled: true,
+                      ),
+                      validator: (v) =>
+                          (v == null || v.trim().isEmpty) ? 'Required' : null,
+                    ),
+                    const SizedBox(height: 16),
                     TextFormField(
                       controller: _emailCtrl,
                       keyboardType: TextInputType.emailAddress,
@@ -121,8 +148,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     TextFormField(
                       controller: _passwordCtrl,
                       obscureText: _obscurePassword,
-                      textInputAction: TextInputAction.done,
-                      onFieldSubmitted: (_) => _submit(),
+                      textInputAction: TextInputAction.next,
                       decoration: InputDecoration(
                         labelText: 'Password',
                         prefixIcon: const Icon(Icons.lock_outline),
@@ -137,8 +163,37 @@ class _LoginScreenState extends State<LoginScreen> {
                             borderRadius: BorderRadius.circular(12)),
                         filled: true,
                       ),
-                      validator: (v) =>
-                          (v == null || v.isEmpty) ? 'Required' : null,
+                      validator: (v) {
+                        if (v == null || v.isEmpty) return 'Required';
+                        if (v.length < 8) return 'At least 8 characters';
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _confirmCtrl,
+                      obscureText: _obscureConfirm,
+                      textInputAction: TextInputAction.done,
+                      onFieldSubmitted: (_) => _submit(),
+                      decoration: InputDecoration(
+                        labelText: 'Confirm Password',
+                        prefixIcon: const Icon(Icons.lock_outline),
+                        suffixIcon: IconButton(
+                          icon: Icon(_obscureConfirm
+                              ? Icons.visibility_outlined
+                              : Icons.visibility_off_outlined),
+                          onPressed: () => setState(
+                              () => _obscureConfirm = !_obscureConfirm),
+                        ),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                        filled: true,
+                      ),
+                      validator: (v) {
+                        if (v == null || v.isEmpty) return 'Required';
+                        if (v != _passwordCtrl.text) return 'Passwords do not match';
+                        return null;
+                      },
                     ),
                     const SizedBox(height: 32),
                     SizedBox(
@@ -157,7 +212,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 child: CircularProgressIndicator(
                                     strokeWidth: 2, color: Colors.white),
                               )
-                            : const Text('Sign In',
+                            : const Text('Create Account',
                                 style: TextStyle(fontSize: 16)),
                       ),
                     ),
@@ -165,8 +220,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     Center(
                       child: TextButton(
                         onPressed: () => Navigator.of(context)
-                            .pushReplacementNamed('/signup'),
-                        child: const Text("Don't have an account? Sign up"),
+                            .pushReplacementNamed('/login'),
+                        child: const Text('Already have an account? Sign in'),
                       ),
                     ),
                   ],

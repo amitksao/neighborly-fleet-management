@@ -12,7 +12,7 @@ const config: DataSourceOptions = {
   database: env.DB.DATABASE,
   entities: [__dirname + '/../**/*.entity{.ts,.js}'],
   migrations: [__dirname + '/../database/migrations/*{.ts,.js}'],
-  synchronize: false,
+  synchronize: true,
   ssl: process.env.SSL_MODE === 'true' ? { rejectUnauthorized: false } : false,
   extra: process.env.DATABASE_URL
     ? { ssl: { rejectUnauthorized: false } }

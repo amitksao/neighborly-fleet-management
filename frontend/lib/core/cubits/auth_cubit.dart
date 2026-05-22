@@ -56,6 +56,16 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
+  Future<void> register(String name, String email, String password) async {
+    emit(AuthLoading());
+    try {
+      final result = await _authService.register(name, email, password);
+      emit(AuthAuthenticated(token: result.token, user: result.user));
+    } catch (e) {
+      emit(AuthError(e.toString().replaceFirst('Exception: ', '')));
+    }
+  }
+
   Future<void> login(String email, String password) async {
     emit(AuthLoading());
     try {

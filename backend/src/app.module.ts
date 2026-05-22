@@ -13,6 +13,7 @@ import { UsersModule } from './users/users.module';
 import { StripeModule } from './stripe/stripe.module';
 import { GooglePlacesModule } from './google-places/google-places.module';
 import { FleetModule } from './fleet/fleet.module';
+import { AuthModule } from './auth/auth.module';
 import { HealthController } from './health.controller';
 
 @Module({
@@ -39,6 +40,7 @@ import { HealthController } from './health.controller';
     StripeModule,
     GooglePlacesModule,
     FleetModule,
+    AuthModule,
   ],
   controllers: [HealthController],
 })

@@ -19,19 +19,32 @@ final navigatorKey = GlobalKey<NavigatorState>();
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Firebase
-  // Requires google-services.json (Android) and GoogleService-Info.plist (iOS)
-  await Firebase.initializeApp();
+  // Initialize Firebase (optional — push notifications only).
+  // Without a firebase_options.dart / google-services config the app still
+  // runs; notifications are simply disabled.
+  bool firebaseReady = false;
+  try {
+    await Firebase.initializeApp();
+    firebaseReady = true;
+  } catch (_) {
+    debugPrint('[Firebase] Not configured — push notifications disabled.');
+  }
 
-  // Register background message handler
-  FirebaseMessaging.onBackgroundMessage(_firebaseBackgroundMessageHandler);
+  if (firebaseReady) {
+    FirebaseMessaging.onBackgroundMessage(_firebaseBackgroundMessageHandler);
+  }
 
   setupInjection();
 
-  // Initialize push notification service
-  final notificationService =
-      FleetNotificationService(navigatorKey: navigatorKey);
-  await notificationService.initialize();
+  if (firebaseReady) {
+    try {
+      final notificationService =
+          FleetNotificationService(navigatorKey: navigatorKey);
+      await notificationService.initialize();
+    } catch (_) {
+      debugPrint('[Notifications] Failed to initialize — continuing without.');
+    }
+  }
 
   runApp(FleetApp(navigatorKey: navigatorKey));
 }

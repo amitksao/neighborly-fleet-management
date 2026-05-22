@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'core/cubits/auth_cubit.dart';
 import 'core/injection.dart';
 import 'features/auth/login_screen.dart';
+import 'features/auth/signup_screen.dart';
 import 'features/auth/splash_screen.dart';
 import 'features/auth/stripe_onboarding_screen.dart';
 import 'fleet/application/blocs/fleet_dashboard_bloc.dart';
@@ -92,6 +93,9 @@ class _AppWithBlocs extends StatelessWidget {
 
       case '/login':
         return MaterialPageRoute(builder: (_) => const LoginScreen());
+
+      case '/signup':
+        return MaterialPageRoute(builder: (_) => const SignupScreen());
 
       case '/fleet/register':
         return MaterialPageRoute(
