@@ -1,9 +1,12 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../core/cubits/auth_cubit.dart';
 import '../../core/injection.dart';
 import '../../fleet/domain/fleet_manager/fleet_manager_repository.dart';
 import '../../fleet/domain/fleet_manager/models/fleet.dart';
+// ignore: avoid_web_libraries_in_flutter
+import 'dart:html' as html;
 
 /// Initial screen. Checks stored credentials and routes accordingly:
 ///   - No token              → /login
@@ -21,6 +24,20 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
+    // Check for password reset token in URL query params (web only)
+    if (kIsWeb) {
+      final uri = Uri.parse(html.window.location.href);
+      final resetToken = uri.queryParameters['reset_token'];
+      if (resetToken != null && resetToken.isNotEmpty) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          Navigator.of(context).pushReplacementNamed(
+            '/reset-password',
+            arguments: resetToken,
+          );
+        });
+        return;
+      }
+    }
     context.read<AuthCubit>().checkAuth();
   }
 

@@ -2,6 +2,8 @@ import {
   Injectable,
   ConflictException,
   UnauthorizedException,
+  BadRequestException,
+  Logger,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -10,15 +12,20 @@ import * as bcrypt from 'bcrypt';
 import { User, UserRole } from '../users/entities/user.entity';
 import { Fleet } from '../fleet/entities/fleet.entity';
 import { RegisterDto } from './dto/register.dto';
+import { EmailService } from '../common/services/email.service';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+  private readonly RESET_EXPIRY = '15m';
+
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     @InjectRepository(Fleet)
     private readonly fleetRepository: Repository<Fleet>,
     private readonly jwtService: JwtService,
+    private readonly emailService: EmailService,
   ) {}
 
   async register(dto: RegisterDto) {
@@ -48,6 +55,51 @@ export class AuthService {
     if (!match) throw new UnauthorizedException('Invalid credentials');
 
     return this.buildResponse(user);
+  }
+
+  async forgotPassword(email: string): Promise<void> {
+    const user = await this.userRepository.findOne({ where: { email } });
+    // Always return success to avoid email enumeration
+    if (!user) return;
+
+    const token = this.jwtService.sign(
+      { id: user.id, type: 'password_reset' },
+      { expiresIn: this.RESET_EXPIRY },
+    );
+
+    const frontendUrl = process.env.APP_BASE_URL ?? 'http://localhost';
+    const resetLink = `${frontendUrl}?reset_token=${token}`;
+
+    await this.emailService.sendEmail(
+      email,
+      'Reset your Neighborly Fleet password',
+      `<h2>Password Reset</h2>
+       <p>Click the link below to reset your password. It expires in 15 minutes.</p>
+       <p><a href="${resetLink}">Reset Password</a></p>
+       <p>If you did not request this, ignore this email.</p>`,
+    );
+
+    this.logger.log(`Password reset email sent to ${email}`);
+  }
+
+  async resetPassword(token: string, newPassword: string): Promise<void> {
+    let payload: { id: string; type: string };
+    try {
+      payload = this.jwtService.verify(token) as { id: string; type: string };
+    } catch {
+      throw new BadRequestException('Reset link is invalid or has expired');
+    }
+
+    if (payload.type !== 'password_reset') {
+      throw new BadRequestException('Invalid reset token');
+    }
+
+    const user = await this.userRepository.findOne({ where: { id: payload.id } });
+    if (!user) throw new BadRequestException('User not found');
+
+    user.password = await bcrypt.hash(newPassword, 10);
+    await this.userRepository.save(user);
+    this.logger.log(`Password reset for user ${user.id}`);
   }
 
   private async buildResponse(user: User) {
